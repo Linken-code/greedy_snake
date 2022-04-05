@@ -1,0 +1,36 @@
+<!--
+ * @Author: Linken
+ * @Date: 2022-04-04 20:52:33
+ * @LastEditTime: 2022-04-05 17:15:58
+ * @LastEditors: Linken
+ * @Description: 学习wasm
+ * @FilePath: \wasm-game\www\public\index.html
+ * 学习wasm,实现贪吃蛇
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style type="text/css">
+      .container {
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <canvas id="snake-canvas"></canvas>
+    </div>
+  </body>
+  <script type="module" src="index.js"></script>
+</html>
