@@ -13,44 +13,63 @@ extern "C" {
 }
 
 #[wasm_bindgen]
-struct SnakeCell(usize);
+struct SnakeCell(i32);
 
 #[wasm_bindgen]
 pub struct Snake {
     body: Vec<SnakeCell>,
+    direction: Direction,
 }
 
 impl Snake {
-    pub fn new(spawn_index: usize) -> Snake {
+    pub fn new(spawn_index: i32) -> Snake {
         Self {
             body: vec![SnakeCell(spawn_index)],
+            direction: Direction::Right,
         }
     }
 }
 
 #[wasm_bindgen]
 pub struct World {
-    width: usize,
-    size: usize,
+    width: i32,
     snake: Snake,
 }
 
 #[wasm_bindgen]
 impl World {
-    pub fn new(width: usize, index: usize) -> World {
+    pub fn new(width: i32, index: i32) -> World {
         Self {
             width,
-            size: width * width,
             snake: Snake::new(index),
         }
     }
 
-    pub fn snake_spawn(&self) -> usize {
+    pub fn snake_spawn(&self) -> i32 {
         self.snake.body[0].0
     }
 
-    pub fn update_snake(&mut self) {
+    pub fn update_snake(&mut self, input: Option<Direction>) {
         let snake_head = self.snake_spawn();
-        self.snake.body[0].0 = (snake_head + 1) % self.size;
+        let (row, col) = (snake_head / self.width, snake_head % self.width);
+        if let Some(direction) = input {
+            self.snake.direction = direction
+        }
+        let (x, y) = match self.snake.direction {
+            Direction::Up => ((row - 1) % self.width, col),
+            Direction::Down => ((row + 1) % self.width, col),
+            Direction::Left => (row, (col - 1) % self.width),
+            Direction::Right => (row, (col + 1) % self.width),
+        };
+        self.snake.body[0].0 = (x * self.width) + y;
     }
+}
+
+#[wasm_bindgen]
+#[derive(PartialEq, Clone, Copy)]
+pub enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
 }

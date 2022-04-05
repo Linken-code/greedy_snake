@@ -14,6 +14,10 @@
   function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len))
   }
+  function isLikeNone(x) {
+    return x === void 0 || x === null
+  }
+  var Direction = Object.freeze({ Up: 0, 0: 'Up', Down: 1, 1: 'Down', Left: 2, 2: 'Left', Right: 3, 3: 'Right' })
   var World = class {
     static __wrap(ptr) {
       const obj = Object.create(World.prototype)
@@ -35,10 +39,10 @@
     }
     snake_spawn() {
       var ret = wasm.world_snake_spawn(this.ptr)
-      return ret >>> 0
+      return ret
     }
-    update_snake() {
-      wasm.world_update_snake(this.ptr)
+    update_snake(input) {
+      wasm.world_update_snake(this.ptr, isLikeNone(input) ? 4 : input)
     }
   }
   async function load(module, imports) {
@@ -95,8 +99,9 @@
   wasm_game_default().then(() => {
     const worldWidth = 20
     const cell_size = 20
-    const fps = 2
-    const world = World.new(worldWidth, 12)
+    const fps = 1
+    const spawnPoint = Date.now() % (worldWidth * worldWidth)
+    const world = World.new(worldWidth, spawnPoint)
     const canvas = document.getElementById('snake-canvas')
     const context = canvas.getContext('2d')
     canvas.width = worldWidth * cell_size
@@ -111,6 +116,7 @@
     }
     initCanvas(world, context, worldWidth, cell_size)
     run()
+    snake_move(world)
   })
   var initCanvas = (world, context, worldWidth, cell_size) => {
     draw(context, worldWidth, cell_size)
@@ -132,8 +138,27 @@
     const snake_index = world.snake_spawn()
     const row = Math.floor(snake_index / worldWidth)
     const col = snake_index % worldWidth
+    console.log(`point=${snake_index}`, `x=${col}`, `y=${row}`)
     context.beginPath()
     context.fillRect(col * cell_size, row * cell_size, cell_size, cell_size)
     context.stroke()
+  }
+  var snake_move = world => {
+    document.addEventListener('keyup', e => {
+      switch (e.code) {
+        case 'ArrowDown':
+          world.update_snake(Direction.Down)
+          break
+        case 'ArrowUp':
+          world.update_snake(Direction.Up)
+          break
+        case 'ArrowLeft':
+          world.update_snake(Direction.Left)
+          break
+        case 'ArrowRight':
+          world.update_snake(Direction.Right)
+          break
+      }
+    })
   }
 })()
