@@ -2,6 +2,29 @@
   // ../pkg/wasm_game.js
   var import_meta = {}
   var wasm
+  var heap = new Array(32).fill(void 0)
+  heap.push(void 0, null, true, false)
+  function getObject(idx) {
+    return heap[idx]
+  }
+  var heap_next = heap.length
+  function dropObject(idx) {
+    if (idx < 36) return
+    heap[idx] = heap_next
+    heap_next = idx
+  }
+  function takeObject(idx) {
+    const ret = getObject(idx)
+    dropObject(idx)
+    return ret
+  }
+  function addHeapObject(obj) {
+    if (heap_next === heap.length) heap.push(heap.length + 1)
+    const idx = heap_next
+    heap_next = heap[idx]
+    heap[idx] = obj
+    return idx
+  }
   var cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true })
   cachedTextDecoder.decode()
   var cachegetUint8Memory0 = null
@@ -16,6 +39,16 @@
   }
   function isLikeNone(x) {
     return x === void 0 || x === null
+  }
+  function handleError(f, args) {
+    try {
+      return f.apply(this, args)
+    } catch (e) {
+      wasm.__wbindgen_exn_store(addHeapObject(e))
+    }
+  }
+  function getArrayU8FromWasm0(ptr, len) {
+    return getUint8Memory0().subarray(ptr / 1, ptr / 1 + len)
   }
   var Direction = Object.freeze({ Up: 0, 0: 'Up', Down: 1, 1: 'Down', Left: 2, 2: 'Left', Right: 3, 3: 'Right' })
   var World = class {
@@ -39,6 +72,18 @@
     }
     snake_spawn() {
       var ret = wasm.world_snake_spawn(this.ptr)
+      return ret
+    }
+    reward_cell() {
+      var ret = wasm.world_reward_cell(this.ptr)
+      return ret
+    }
+    snake_cells() {
+      var ret = wasm.world_snake_cells(this.ptr)
+      return ret
+    }
+    snake_length() {
+      var ret = wasm.world_snake_length(this.ptr)
       return ret
     }
     update_snake(input) {
@@ -78,8 +123,129 @@
     }
     const imports = {}
     imports.wbg = {}
+    imports.wbg.__wbg_getRandomValues_fb6b088efb6bead2 = function () {
+      return handleError(function (arg0, arg1) {
+        getObject(arg0).getRandomValues(getObject(arg1))
+      }, arguments)
+    }
+    imports.wbg.__wbg_randomFillSync_654a7797990fb8db = function () {
+      return handleError(function (arg0, arg1, arg2) {
+        getObject(arg0).randomFillSync(getArrayU8FromWasm0(arg1, arg2))
+      }, arguments)
+    }
+    imports.wbg.__wbg_static_accessor_NODE_MODULE_33b45247c55045b0 = function () {
+      var ret = module
+      return addHeapObject(ret)
+    }
+    imports.wbg.__wbindgen_object_drop_ref = function (arg0) {
+      takeObject(arg0)
+    }
+    imports.wbg.__wbg_process_70251ed1291754d5 = function (arg0) {
+      var ret = getObject(arg0).process
+      return addHeapObject(ret)
+    }
+    imports.wbg.__wbindgen_is_object = function (arg0) {
+      const val = getObject(arg0)
+      var ret = typeof val === 'object' && val !== null
+      return ret
+    }
+    imports.wbg.__wbg_versions_b23f2588cdb2ddbb = function (arg0) {
+      var ret = getObject(arg0).versions
+      return addHeapObject(ret)
+    }
+    imports.wbg.__wbg_node_61b8c9a82499895d = function (arg0) {
+      var ret = getObject(arg0).node
+      return addHeapObject(ret)
+    }
+    imports.wbg.__wbindgen_is_string = function (arg0) {
+      var ret = typeof getObject(arg0) === 'string'
+      return ret
+    }
+    imports.wbg.__wbg_require_2a93bc09fee45aca = function () {
+      return handleError(function (arg0, arg1, arg2) {
+        var ret = getObject(arg0).require(getStringFromWasm0(arg1, arg2))
+        return addHeapObject(ret)
+      }, arguments)
+    }
+    imports.wbg.__wbg_crypto_2f56257a38275dbd = function (arg0) {
+      var ret = getObject(arg0).crypto
+      return addHeapObject(ret)
+    }
+    imports.wbg.__wbg_msCrypto_d07655bf62361f21 = function (arg0) {
+      var ret = getObject(arg0).msCrypto
+      return addHeapObject(ret)
+    }
+    imports.wbg.__wbg_newnoargs_f579424187aa1717 = function (arg0, arg1) {
+      var ret = new Function(getStringFromWasm0(arg0, arg1))
+      return addHeapObject(ret)
+    }
+    imports.wbg.__wbg_call_89558c3e96703ca1 = function () {
+      return handleError(function (arg0, arg1) {
+        var ret = getObject(arg0).call(getObject(arg1))
+        return addHeapObject(ret)
+      }, arguments)
+    }
+    imports.wbg.__wbg_self_e23d74ae45fb17d1 = function () {
+      return handleError(function () {
+        var ret = self.self
+        return addHeapObject(ret)
+      }, arguments)
+    }
+    imports.wbg.__wbg_window_b4be7f48b24ac56e = function () {
+      return handleError(function () {
+        var ret = window.window
+        return addHeapObject(ret)
+      }, arguments)
+    }
+    imports.wbg.__wbg_globalThis_d61b1f48a57191ae = function () {
+      return handleError(function () {
+        var ret = globalThis.globalThis
+        return addHeapObject(ret)
+      }, arguments)
+    }
+    imports.wbg.__wbg_global_e7669da72fd7f239 = function () {
+      return handleError(function () {
+        var ret = global.global
+        return addHeapObject(ret)
+      }, arguments)
+    }
+    imports.wbg.__wbindgen_is_undefined = function (arg0) {
+      var ret = getObject(arg0) === void 0
+      return ret
+    }
+    imports.wbg.__wbg_buffer_5e74a88a1424a2e0 = function (arg0) {
+      var ret = getObject(arg0).buffer
+      return addHeapObject(ret)
+    }
+    imports.wbg.__wbg_new_e3b800e570795b3c = function (arg0) {
+      var ret = new Uint8Array(getObject(arg0))
+      return addHeapObject(ret)
+    }
+    imports.wbg.__wbg_set_5b8081e9d002f0df = function (arg0, arg1, arg2) {
+      getObject(arg0).set(getObject(arg1), arg2 >>> 0)
+    }
+    imports.wbg.__wbg_length_30803400a8f15c59 = function (arg0) {
+      var ret = getObject(arg0).length
+      return ret
+    }
+    imports.wbg.__wbg_newwithlength_5f4ce114a24dfe1e = function (arg0) {
+      var ret = new Uint8Array(arg0 >>> 0)
+      return addHeapObject(ret)
+    }
+    imports.wbg.__wbg_subarray_a68f835ca2af506f = function (arg0, arg1, arg2) {
+      var ret = getObject(arg0).subarray(arg1 >>> 0, arg2 >>> 0)
+      return addHeapObject(ret)
+    }
+    imports.wbg.__wbindgen_object_clone_ref = function (arg0) {
+      var ret = getObject(arg0)
+      return addHeapObject(ret)
+    }
     imports.wbg.__wbindgen_throw = function (arg0, arg1) {
       throw new Error(getStringFromWasm0(arg0, arg1))
+    }
+    imports.wbg.__wbindgen_memory = function () {
+      var ret = wasm.memory
+      return addHeapObject(ret)
     }
     if (
       typeof input === 'string' ||
@@ -95,12 +261,17 @@
   }
   var wasm_game_default = init
 
+  // utils/index.js
+  function randomPointer(max) {
+    return Math.floor(Math.random() * max)
+  }
+
   // index.ts
-  wasm_game_default().then(() => {
+  wasm_game_default().then(wasm2 => {
     const worldWidth = 20
     const cell_size = 20
-    const fps = 1
-    const spawnPoint = Date.now() % (worldWidth * worldWidth)
+    const fps = 2
+    const spawnPoint = randomPointer(worldWidth * worldWidth)
     const world = World.new(worldWidth, spawnPoint)
     const canvas = document.getElementById('snake-canvas')
     const context = canvas.getContext('2d')
@@ -110,17 +281,18 @@
       setTimeout(() => {
         context.clearRect(0, 0, canvas.width, canvas.height)
         world.update_snake()
-        initCanvas(world, context, worldWidth, cell_size)
+        initCanvas(wasm2, world, context, worldWidth, cell_size)
         requestAnimationFrame(run)
       }, 1e3 / fps)
     }
-    initCanvas(world, context, worldWidth, cell_size)
+    initCanvas(wasm2, world, context, worldWidth, cell_size)
     run()
     snake_move(world)
   })
-  var initCanvas = (world, context, worldWidth, cell_size) => {
+  var initCanvas = (wasm2, world, context, worldWidth, cell_size) => {
     draw(context, worldWidth, cell_size)
-    drawSnake(world, context, worldWidth, cell_size)
+    drawSnake(wasm2, world, context, worldWidth, cell_size)
+    drawReward(world, context, worldWidth, cell_size)
   }
   var draw = (context, worldWidth, cell_size) => {
     context.beginPath()
@@ -134,12 +306,26 @@
     }
     context.stroke()
   }
-  var drawSnake = (world, context, worldWidth, cell_size) => {
-    const snake_index = world.snake_spawn()
-    const row = Math.floor(snake_index / worldWidth)
-    const col = snake_index % worldWidth
-    console.log(`point=${snake_index}`, `x=${col}`, `y=${row}`)
+  var drawSnake = (wasm2, world, context, worldWidth, cell_size) => {
+    drawSnakeCells(wasm2, world, context, worldWidth, cell_size)
+    context.stroke()
+  }
+  var drawSnakeCells = (wasm2, world, context, worldWidth, cell_size) => {
+    const snakeCells = new Uint32Array(wasm2.memory.buffer, world.snake_cells(), world.snake_length())
+    snakeCells.forEach((item, index) => {
+      const row = Math.floor(item / worldWidth)
+      const col = item % worldWidth
+      context.beginPath()
+      context.fillStyle = index ? '#000000' : 'green'
+      context.fillRect(col * cell_size, row * cell_size, cell_size, cell_size)
+    })
+  }
+  var drawReward = (world, context, worldWidth, cell_size) => {
+    const index = world.reward_cell()
+    const row = Math.floor(index / worldWidth)
+    const col = index % worldWidth
     context.beginPath()
+    context.fillStyle = '#FF0000'
     context.fillRect(col * cell_size, row * cell_size, cell_size, cell_size)
     context.stroke()
   }

@@ -1,7 +1,7 @@
 /*
  * @Author: Linken
  * @Date: 2022-04-04 21:38:06
- * @LastEditTime: 2022-04-05 23:06:38
+ * @LastEditTime: 2022-04-06 21:26:44
  * @LastEditors: Linken
  * @Description: 学习wasm
  * @FilePath: \wasm-game\www\index.ts
@@ -9,12 +9,12 @@
  */
 
 import init, { World, Direction } from 'wasm_game'
-
-init().then(() => {
+import { randomPointer } from './utils/index'
+init().then(wasm => {
   const worldWidth = 20
   const cell_size = 20
-  const fps = 1
-  const spawnPoint = Date.now() % (worldWidth * worldWidth)
+  const fps = 2
+  const spawnPoint = randomPointer(worldWidth * worldWidth)
   const world = World.new(worldWidth, spawnPoint)
   const canvas = <HTMLCanvasElement>document.getElementById('snake-canvas')
   const context = canvas.getContext('2d')
@@ -25,19 +25,20 @@ init().then(() => {
     setTimeout(() => {
       context.clearRect(0, 0, canvas.width, canvas.height)
       world.update_snake()
-      initCanvas(world, context, worldWidth, cell_size)
+      initCanvas(wasm, world, context, worldWidth, cell_size)
       requestAnimationFrame(run)
     }, 1000 / fps)
   }
 
-  initCanvas(world, context, worldWidth, cell_size)
+  initCanvas(wasm, world, context, worldWidth, cell_size)
   run()
   snake_move(world)
 })
 // init
-const initCanvas = (world, context, worldWidth, cell_size) => {
+const initCanvas = (wasm, world, context, worldWidth, cell_size) => {
   draw(context, worldWidth, cell_size)
-  drawSnake(world, context, worldWidth, cell_size)
+  drawSnake(wasm, world, context, worldWidth, cell_size)
+  drawReward(world, context, worldWidth, cell_size)
 }
 
 //画布方法
@@ -57,12 +58,31 @@ const draw = (context, worldWidth, cell_size) => {
 }
 
 //画蛇
-const drawSnake = (world, context, worldWidth, cell_size) => {
-  const snake_index = world.snake_spawn()
-  const row = Math.floor(snake_index / worldWidth)
-  const col = snake_index % worldWidth
+const drawSnake = (wasm, world, context, worldWidth, cell_size) => {
+  drawSnakeCells(wasm, world, context, worldWidth, cell_size)
+  context.stroke()
+}
+
+//蛇身
+const drawSnakeCells = (wasm, world, context, worldWidth, cell_size) => {
+  const snakeCells = new Uint32Array(wasm.memory.buffer, world.snake_cells(), world.snake_length())
+  snakeCells.forEach((item, index) => {
+    const row = Math.floor(item / worldWidth)
+    const col = item % worldWidth
+    context.beginPath()
+    context.fillStyle = index ? '#000000' : 'green'
+    context.fillRect(col * cell_size, row * cell_size, cell_size, cell_size)
+  })
+}
+
+//奖励
+const drawReward = (world, context, worldWidth, cell_size) => {
+  const index = world.reward_cell()
+  const row = Math.floor(index / worldWidth)
+  const col = index % worldWidth
 
   context.beginPath()
+  context.fillStyle = '#FF0000'
   context.fillRect(col * cell_size, row * cell_size, cell_size, cell_size)
   context.stroke()
 }

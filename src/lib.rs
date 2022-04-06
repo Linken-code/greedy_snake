@@ -13,7 +13,7 @@ extern "C" {
 }
 
 #[wasm_bindgen]
-struct SnakeCell(i32);
+pub struct SnakeCell(i32);
 
 #[wasm_bindgen]
 pub struct Snake {
@@ -24,7 +24,11 @@ pub struct Snake {
 impl Snake {
     pub fn new(spawn_index: i32) -> Snake {
         Self {
-            body: vec![SnakeCell(spawn_index)],
+            body: vec![
+                SnakeCell(spawn_index),
+                SnakeCell(spawn_index + 1),
+                SnakeCell(spawn_index + 2),
+            ],
             direction: Direction::Right,
         }
     }
@@ -34,19 +38,35 @@ impl Snake {
 pub struct World {
     width: i32,
     snake: Snake,
+    reward_cell: i32,
 }
 
 #[wasm_bindgen]
 impl World {
-    pub fn new(width: i32, index: i32) -> World {
+    pub fn new(width: i32, index: i32) -> Self {
+        let snake = Snake::new(index);
+        let reward_cell = utils::random();
         Self {
             width,
-            snake: Snake::new(index),
+            reward_cell,
+            snake,
         }
     }
 
     pub fn snake_spawn(&self) -> i32 {
         self.snake.body[0].0
+    }
+
+    pub fn reward_cell(&self) -> i32 {
+        self.reward_cell
+    }
+
+    pub fn snake_cells(&self) -> *const SnakeCell {
+        self.snake.body.as_ptr()
+    }
+
+    pub fn snake_length(&self) -> i32 {
+        self.snake.body.len() as i32
     }
 
     pub fn update_snake(&mut self, input: Option<Direction>) {
@@ -56,10 +76,10 @@ impl World {
             self.snake.direction = direction
         }
         let (x, y) = match self.snake.direction {
-            Direction::Up => ((row - 1) % self.width, col),
-            Direction::Down => ((row + 1) % self.width, col),
-            Direction::Left => (row, (col - 1) % self.width),
-            Direction::Right => (row, (col + 1) % self.width),
+            Direction::Up => ((row - 1), col),
+            Direction::Down => ((row + 1), col),
+            Direction::Left => (row, (col - 1)),
+            Direction::Right => (row, (col + 1)),
         };
         self.snake.body[0].0 = (x * self.width) + y;
     }
