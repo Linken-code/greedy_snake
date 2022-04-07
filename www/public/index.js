@@ -74,8 +74,8 @@
       var ret = wasm.world_snake_spawn(this.ptr)
       return ret
     }
-    reward_cell() {
-      var ret = wasm.world_reward_cell(this.ptr)
+    get_reward_cell() {
+      var ret = wasm.world_get_reward_cell(this.ptr)
       return ret
     }
     snake_cells() {
@@ -308,20 +308,21 @@
   }
   var drawSnake = (wasm2, world, context, worldWidth, cell_size) => {
     drawSnakeCells(wasm2, world, context, worldWidth, cell_size)
-    context.stroke()
   }
   var drawSnakeCells = (wasm2, world, context, worldWidth, cell_size) => {
     const snakeCells = new Uint32Array(wasm2.memory.buffer, world.snake_cells(), world.snake_length())
+    context.beginPath()
     snakeCells.forEach((item, index) => {
+      console.log(item)
       const row = Math.floor(item / worldWidth)
       const col = item % worldWidth
-      context.beginPath()
-      context.fillStyle = index ? '#000000' : 'green'
+      context.fillStyle = index === 0 ? 'green' : '#000000'
       context.fillRect(col * cell_size, row * cell_size, cell_size, cell_size)
     })
+    context.stroke()
   }
   var drawReward = (world, context, worldWidth, cell_size) => {
-    const index = world.reward_cell()
+    const index = world.get_reward_cell()
     const row = Math.floor(index / worldWidth)
     const col = index % worldWidth
     context.beginPath()

@@ -1,7 +1,7 @@
 /*
  * @Author: Linken
  * @Date: 2022-04-04 21:38:06
- * @LastEditTime: 2022-04-06 21:26:44
+ * @LastEditTime: 2022-04-07 22:19:07
  * @LastEditors: Linken
  * @Description: 学习wasm
  * @FilePath: \wasm-game\www\index.ts
@@ -60,24 +60,24 @@ const draw = (context, worldWidth, cell_size) => {
 //画蛇
 const drawSnake = (wasm, world, context, worldWidth, cell_size) => {
   drawSnakeCells(wasm, world, context, worldWidth, cell_size)
-  context.stroke()
 }
 
 //蛇身
 const drawSnakeCells = (wasm, world, context, worldWidth, cell_size) => {
   const snakeCells = new Uint32Array(wasm.memory.buffer, world.snake_cells(), world.snake_length())
+  context.beginPath()
   snakeCells.forEach((item, index) => {
     const row = Math.floor(item / worldWidth)
     const col = item % worldWidth
-    context.beginPath()
-    context.fillStyle = index ? '#000000' : 'green'
+    context.fillStyle = index === 0 ? 'green' : '#000000'
     context.fillRect(col * cell_size, row * cell_size, cell_size, cell_size)
   })
+  context.stroke()
 }
 
 //奖励
 const drawReward = (world, context, worldWidth, cell_size) => {
-  const index = world.reward_cell()
+  const index = world.get_reward_cell()
   const row = Math.floor(index / worldWidth)
   const col = index % worldWidth
 
