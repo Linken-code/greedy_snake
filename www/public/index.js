@@ -51,6 +51,7 @@
     return getUint8Memory0().subarray(ptr / 1, ptr / 1 + len)
   }
   var Direction = Object.freeze({ Up: 0, 0: 'Up', Down: 1, 1: 'Down', Left: 2, 2: 'Left', Right: 3, 3: 'Right' })
+  var GameState = Object.freeze({ Stop: 0, 0: 'Stop', Run: 1, 1: 'Run' })
   var World = class {
     static __wrap(ptr) {
       const obj = Object.create(World.prototype)
@@ -87,7 +88,12 @@
       return ret
     }
     update_snake(input) {
-      wasm.world_update_snake(this.ptr, isLikeNone(input) ? 4 : input)
+      var ret = wasm.world_update_snake(this.ptr, isLikeNone(input) ? 4 : input)
+      return ret >>> 0
+    }
+    game_rest(width, index) {
+      var ret = wasm.world_game_rest(this.ptr, width, index)
+      return World.__wrap(ret)
     }
   }
   async function load(module, imports) {
@@ -272,21 +278,34 @@
     const cell_size = 20
     const fps = 2
     const spawnPoint = randomPointer(worldWidth * worldWidth)
-    const world = World.new(worldWidth, spawnPoint)
+    let world = World.new(worldWidth, spawnPoint)
     const canvas = document.getElementById('snake-canvas')
     const context = canvas.getContext('2d')
     canvas.width = worldWidth * cell_size
     canvas.height = worldWidth * cell_size
+    let gameRunner = null
+    let gameCanvas = null
     const run = () => {
-      setTimeout(() => {
+      gameRunner = setTimeout(() => {
         context.clearRect(0, 0, canvas.width, canvas.height)
-        world.update_snake()
-        initCanvas(wasm2, world, context, worldWidth, cell_size)
-        requestAnimationFrame(run)
+        let state = world.update_snake()
+        if (state === GameState.Stop) {
+          clearTimeout(gameRunner)
+          window.cancelAnimationFrame(gameCanvas)
+          alert('\u6E38\u620F\u5931\u8D25')
+          const restPoint = randomPointer(worldWidth * worldWidth)
+          world = world.game_rest(worldWidth, restPoint)
+          context.clearRect(0, 0, canvas.width, canvas.height)
+          initCanvas(wasm2, world, context, worldWidth, cell_size)
+          snake_move(world)
+        } else {
+          initCanvas(wasm2, world, context, worldWidth, cell_size)
+          gameCanvas = requestAnimationFrame(run)
+        }
       }, 1e3 / fps)
     }
     initCanvas(wasm2, world, context, worldWidth, cell_size)
-    run()
+    game_control(run)
     snake_move(world)
   })
   var initCanvas = (wasm2, world, context, worldWidth, cell_size) => {
@@ -313,7 +332,6 @@
     const snakeCells = new Uint32Array(wasm2.memory.buffer, world.snake_cells(), world.snake_length())
     context.beginPath()
     snakeCells.forEach((item, index) => {
-      console.log(item)
       const row = Math.floor(item / worldWidth)
       const col = item % worldWidth
       context.fillStyle = index === 0 ? 'green' : '#000000'
@@ -346,6 +364,12 @@
           world.update_snake(Direction.Right)
           break
       }
+    })
+  }
+  var game_control = run => {
+    let controlBtn = document.getElementById('game_control')
+    controlBtn.addEventListener('click', () => {
+      run()
     })
   }
 })()

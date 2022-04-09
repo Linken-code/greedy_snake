@@ -1,7 +1,7 @@
 <!--
  * @Author: Linken
  * @Date: 2022-04-04 20:52:33
- * @LastEditTime: 2022-04-05 17:15:58
+ * @LastEditTime: 2022-04-09 21:19:20
  * @LastEditors: Linken
  * @Description: 学习wasm
  * @FilePath: \wasm-game\www\public\index.html
@@ -24,11 +24,19 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
+      }
+      .tools {
+        margin-bottom: 20px;
       }
     </style>
   </head>
   <body>
     <div class="container">
+      <div class="tools">
+        <button id="game_control">开始游戏</button>
+        <button id="game_stop">暂停游戏</button>
+      </div>
       <canvas id="snake-canvas"></canvas>
     </div>
   </body>

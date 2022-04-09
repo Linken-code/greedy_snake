@@ -1,37 +1,49 @@
 /*
  * @Author: Linken
  * @Date: 2022-04-04 21:38:06
- * @LastEditTime: 2022-04-07 22:19:07
+ * @LastEditTime: 2022-04-09 22:59:02
  * @LastEditors: Linken
  * @Description: 学习wasm
  * @FilePath: \wasm-game\www\index.ts
  * 学习wasm,实现贪吃蛇
  */
 
-import init, { World, Direction } from 'wasm_game'
+import init, { World, Direction, GameState } from 'wasm_game'
 import { randomPointer } from './utils/index'
 init().then(wasm => {
   const worldWidth = 20
   const cell_size = 20
   const fps = 2
   const spawnPoint = randomPointer(worldWidth * worldWidth)
-  const world = World.new(worldWidth, spawnPoint)
+  let world = World.new(worldWidth, spawnPoint)
   const canvas = <HTMLCanvasElement>document.getElementById('snake-canvas')
   const context = canvas.getContext('2d')
   canvas.width = worldWidth * cell_size
   canvas.height = worldWidth * cell_size
-
+  let gameRunner = null
+  let gameCanvas = null
   const run = () => {
-    setTimeout(() => {
+    gameRunner = setTimeout(() => {
       context.clearRect(0, 0, canvas.width, canvas.height)
-      world.update_snake()
-      initCanvas(wasm, world, context, worldWidth, cell_size)
-      requestAnimationFrame(run)
+      let state = world.update_snake()
+      if (state === GameState.Stop) {
+        clearTimeout(gameRunner)
+        window.cancelAnimationFrame(gameCanvas)
+        alert('游戏失败')
+        const restPoint = randomPointer(worldWidth * worldWidth)
+        world = world.game_rest(worldWidth, restPoint)
+        context.clearRect(0, 0, canvas.width, canvas.height)
+        initCanvas(wasm, world, context, worldWidth, cell_size)
+        snake_move(world)
+      } else {
+        initCanvas(wasm, world, context, worldWidth, cell_size)
+        gameCanvas = requestAnimationFrame(run)
+      }
     }, 1000 / fps)
   }
 
   initCanvas(wasm, world, context, worldWidth, cell_size)
-  run()
+  game_control(run)
   snake_move(world)
 })
 // init
@@ -104,5 +116,12 @@ const snake_move = world => {
         world.update_snake(Direction.Right)
         break
     }
+  })
+}
+
+const game_control = run => {
+  let controlBtn = document.getElementById('game_control')
+  controlBtn.addEventListener('click', () => {
+    run()
   })
 }
