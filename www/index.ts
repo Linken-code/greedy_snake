@@ -1,7 +1,7 @@
 /*
  * @Author: Linken
  * @Date: 2022-04-04 21:38:06
- * @LastEditTime: 2022-04-09 22:59:02
+ * @LastEditTime: 2022-04-13 15:04:43
  * @LastEditors: Linken
  * @Description: 学习wasm
  * @FilePath: \wasm-game\www\index.ts
@@ -13,7 +13,7 @@ import { randomPointer } from './utils/index'
 init().then(wasm => {
   const worldWidth = 20
   const cell_size = 20
-  const fps = 2
+  let fps = 2
   const spawnPoint = randomPointer(worldWidth * worldWidth)
   let world = World.new(worldWidth, spawnPoint)
   const canvas = <HTMLCanvasElement>document.getElementById('snake-canvas')
@@ -23,6 +23,8 @@ init().then(wasm => {
   let gameRunner = null
   let gameCanvas = null
   const run = () => {
+    let len = world.snake_length()
+    fps = Math.floor(len / 10) + 1
     gameRunner = setTimeout(() => {
       context.clearRect(0, 0, canvas.width, canvas.height)
       let state = world.update_snake()

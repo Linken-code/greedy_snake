@@ -276,7 +276,7 @@
   wasm_game_default().then(wasm2 => {
     const worldWidth = 20
     const cell_size = 20
-    const fps = 2
+    let fps = 2
     const spawnPoint = randomPointer(worldWidth * worldWidth)
     let world = World.new(worldWidth, spawnPoint)
     const canvas = document.getElementById('snake-canvas')
@@ -286,6 +286,8 @@
     let gameRunner = null
     let gameCanvas = null
     const run = () => {
+      let len = world.snake_length()
+      fps = Math.floor(len / 10) + 1
       gameRunner = setTimeout(() => {
         context.clearRect(0, 0, canvas.width, canvas.height)
         let state = world.update_snake()
